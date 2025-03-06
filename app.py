@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, request, jsonify, render_template
+import numpy as np
 
 app = Flask(__name__)
 
@@ -6,28 +7,47 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
-@app.route('/solve', methods=['POST'])
-def solve():
+def row_echelon(A):
+    rows, cols = A.shape
+    steps = []
+
+    for i in range(min(rows, cols)):
+        # Swap if diagonal element is zero
+        if A[i, i] == 0:
+            for j in range(i + 1, rows):
+                if A[j, i] != 0:
+                    A[[i, j]] = A[[j, i]]  # Swap rows
+                    steps.append(f"Swapped Row {i+1} with Row {j+1}")
+                    break
+
+        # Normalize row to make pivot = 1
+        if A[i, i] != 0:
+            factor = A[i, i]
+            A[i] = A[i] / factor
+            steps.append(f"Row {i+1} divided by {factor}")
+
+        # Make elements below pivot zero
+        for j in range(i + 1, rows):
+            if A[j, i] != 0:
+                factor = A[j, i]
+                A[j] = A[j] - factor * A[i]
+                steps.append(f"Row {j+1} → Row {j+1} - ({factor}) * Row {i+1}")
+
+    return A, steps
+
+@app.route('/echelon', methods=['POST'])
+def echelon():
     try:
-        a = float(request.json['a'])
-        b = float(request.json['b'])
+        matrix = request.json['matrix']
+        A = np.array(matrix, dtype=float)
 
-        steps = []
-        steps.append(f"Given Equation: {a}x + {b} = 0")
+        echelon_matrix, steps = row_echelon(A)
+        echelon_list = echelon_matrix.tolist()
 
-        if a == 0:
-            result = "No solution (a should not be zero)"
-        else:
-            steps.append(f"Step 1: Rearrange the equation → {a}x = {-b}")
-            x = -b / a
-            steps.append(f"Step 2: Solve for x → x = {-b}/{a}")
-            steps.append(f"Final Answer: x = {x}")
-            result = f"x = {x}"
+        return jsonify({'result': echelon_list, 'steps': steps})
 
-        return jsonify({'result': result, 'steps': steps})
-
-    except:
-        return jsonify({'result': 'Invalid input', 'steps': []})
+    except Exception as e:
+        return jsonify({'error': str(e)})
 
 if __name__ == '__main__':
     app.run(debug=True)

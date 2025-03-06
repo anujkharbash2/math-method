@@ -1,21 +1,31 @@
-document.getElementById("equationForm").onsubmit = async function(e) {
+document.getElementById("echelonForm").onsubmit = async function(e) {
     e.preventDefault();
-    let a = document.getElementById("a").value;
-    let b = document.getElementById("b").value;
+    let matrix = document.getElementById("matrix").value;
 
-    let response = await fetch('/solve', {
+    let rows = matrix.trim().split("\n").map(row => row.trim().split(" ").map(Number));
+
+    let response = await fetch('/echelon', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ a: a, b: b })
+        body: JSON.stringify({ matrix: rows })
     });
 
     let data = await response.json();
-    let resultDiv = document.getElementById("result");
-    resultDiv.innerHTML = ""; // Clear previous result
+    let resultDiv = document.getElementById("echelonResult");
+    resultDiv.innerHTML = ""; 
 
-    data.steps.forEach(step => {
-        let p = document.createElement("p");
-        p.innerText = step;
-        resultDiv.appendChild(p);
-    });
+    if (data.steps) {
+        data.steps.forEach(step => {
+            let p = document.createElement("p");
+            p.innerText = step;
+            resultDiv.appendChild(p);
+        });
+
+        resultDiv.innerHTML += "<h3>Final Row Echelon Form:</h3>";
+        data.result.forEach(row => {
+            resultDiv.innerHTML += `[${row.join(", ")}]<br>`;
+        });
+    } else {
+        resultDiv.innerHTML = "Invalid Input!";
+    }
 }
