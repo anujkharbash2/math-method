@@ -12,21 +12,21 @@ def row_echelon(A):
     steps = []
 
     for i in range(min(rows, cols)):
-        # Swap if diagonal element is zero
+       # check if the dignl elmt is 0
         if A[i, i] == 0:
             for j in range(i + 1, rows):
                 if A[j, i] != 0:
-                    A[[i, j]] = A[[j, i]]  # Swap rows
+                    A[[i, j]] = A[[j, i]]  #this is for swapping rows
                     steps.append(f"Swapped Row {i+1} with Row {j+1}")
                     break
 
-        # Normalize row to make pivot = 1
+       
         if A[i, i] != 0:
             factor = A[i, i]
             A[i] = A[i] / factor
             steps.append(f"Row {i+1} divided by {factor}")
 
-        # Make elements below pivot zero
+      
         for j in range(i + 1, rows):
             if A[j, i] != 0:
                 factor = A[j, i]

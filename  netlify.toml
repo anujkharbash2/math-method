@@ -1,0 +1,5 @@
+[[redirects]]
+  from = "/echelon"
+  to = "https://mathsolver-backend.onrender.com/echelon"
+  status = 200
+  force = true
